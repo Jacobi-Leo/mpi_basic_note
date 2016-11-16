@@ -40,10 +40,10 @@ int main(int argc, char**argv) {
 		char *color1[2] = {"1", NULL}; 
 		char *color2[2] = {"2", NULL}; 
 		color = 0; 
-		MPI_Comm_spawn("process", color1, size, MPI_INFO_NULL, 0,  
+		MPI_Comm_spawn("/home/jacob/Documents/Courses/graduate/ParallelProg/mpi_basic_note/process", color1, size, MPI_INFO_NULL, 0,  
 				MPI_COMM_WORLD, &inter_rcomm, MPI_ERRCODES_IGNORE); 
 		MPI_Intercomm_merge(inter_rcomm, color, &intra_rcomm); 
-		MPI_Comm_spawn("process", color2, size, MPI_INFO_NULL, 0,  
+		MPI_Comm_spawn("/home/jacob/Documents/Courses/graduate/ParallelProg/mpi_basic_note/process", color2, size, MPI_INFO_NULL, 0,  
 				intra_rcomm, &inter_gcomm,MPI_ERRCODES_IGNORE); 
 		MPI_Intercomm_merge(inter_gcomm, color, &intra_gcomm); 
 
@@ -56,7 +56,7 @@ int main(int argc, char**argv) {
 		if (color==1) { 
 			MPI_Comm_get_parent(&inter_lcomm); 
 			MPI_Intercomm_merge(inter_lcomm, color, &intra_lcomm); 
-			MPI_Comm_spawn("process", color2, size, MPI_INFO_NULL, 0,  
+			MPI_Comm_spawn("/home/jacob/Documents/Courses/graduate/ParallelProg/mpi_basic_note/process", color2, size, MPI_INFO_NULL, 0,  
 					intra_lcomm, &inter_gcomm,MPI_ERRCODES_IGNORE); 
 			MPI_Intercomm_merge(inter_gcomm, color, &intra_gcomm); 
 
