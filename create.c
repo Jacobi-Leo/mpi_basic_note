@@ -15,6 +15,10 @@ int main(int argc, char ** argv) {
     MPI_Comm_size( MPI_COMM_WORLD, &size );
     
     if ( rank > 3*(size/3) - 1 ) {
+	/*
+	 * id_key  用于标记三个进程组
+	 * id_key1 用于标记有用线程和丢弃线程
+	 */
 	id_key = MPI_UNDEFINED;
 	id_key1 = id_key;
     }
@@ -23,8 +27,8 @@ int main(int argc, char ** argv) {
 	id_key1 = 1;
     }
 
+    /* 构造进程组``环'' */
     MPI_Comm_split( MPI_COMM_WORLD, id_key, rank, &intra_gcomm );
-
     if ( id_key == 0 ) {
 	MPI_Intercomm_create( intra_gcomm, 0, MPI_COMM_WORLD, 1, 1, &inter_lcomm );
 	MPI_Intercomm_create( intra_gcomm, 0, MPI_COMM_WORLD, 2, 2, &inter_rcomm );
@@ -43,12 +47,15 @@ int main(int argc, char ** argv) {
 	MPI_Intercomm_merge( inter_lcomm, id_key, &intra_lcomm );
 	MPI_Intercomm_merge( inter_rcomm, id_key, &intra_rcomm );
     }
+    /* 进程组环构造完成 */
 
     int rrank, lrank, rsize, lsize, gsize, grank;
     if ( id_key1 != 1 ) {
+	/* 被丢弃的进程 */
 	printf("I'm process %d with id_key %d.\n\n", rank, id_key);
     }
     else {
+	/* 打印所有组内通信子的信息 */
 	MPI_Comm_size( intra_lcomm, &lsize );
 	MPI_Comm_rank( intra_lcomm, &lrank );
 	MPI_Comm_size( intra_rcomm, &rsize );
@@ -71,9 +78,11 @@ int main(int argc, char ** argv) {
 	}
     }
 
+    /* 构造拓扑结构 */
     int ndims=2, cart_rank;	
     int dims[2], periods[2], coords[2];
-    MPI_Comm comm_cart, comm_new;
+    MPI_Comm comm_cart, comm_new; 
+    // comm_new 是除去被丢弃的线程之外的所有的线程及其通信域构成的新的通信子
     MPI_Comm_split( MPI_COMM_WORLD, id_key1, rank, &comm_new );
     if ( id_key1 == 1) {
 	dims[0] = 3; 
@@ -91,6 +100,7 @@ int main(int argc, char ** argv) {
 		}
 	    }
 	}
+	/* 释放通信子 */
 	MPI_Comm_free( &inter_lcomm );
 	MPI_Comm_free( &inter_rcomm );
 	MPI_Comm_free( &intra_lcomm );
